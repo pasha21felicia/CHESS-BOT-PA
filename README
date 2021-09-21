@@ -1,0 +1,266 @@
+Cheesburger Team, 323CC
+Membri: Basaraba Razvan
+	Ciudin Luiza-Adelina
+	Digori Parascovia
+	Noaghea Marian
+
+
+ETAPA 1:
+
+- In aceasta etapa am implementat miscarea pionului de pe pozitia a7, care
+include atat inaintarea piesei, cat si capturarea altor piese de catre pion,
+daca este cazul.
+
+Instructiuni de rulare:
+	make build
+	xboard -fcp "make run"
+	make clean
+
+Detalii despre structura proiectului:
+
+*Main
+- La inceputul programului avem adaugate variabilele ajutatoare "mode", "turn"
+si "stoped" care au urmatoarea functionalitate:
+	-turn: are valoarea true cand este randul bot-ului sa faca urmatoarea
+miscare si false in caz contrar
+	-mode: are valoarea true daca bot-ul trebuie sa joace cu white si false
+daca joaca cu black
+	-stoped: are valoarea true cand vrem sa oprim bot-ul din a face miscari
+si false in caz contrar (folosit in principal la "force")
+- La inceputul programului initializam tabla (clasa care se ocupa de updatarea
+miscarilor de pe tabla se numeste "Board") si interpretam, intr-un while care
+ruleaza la infinit, fiecare comanda primita de la aplicatie (la stdin).
+- De la stdin putem interpreta urmatoarele comenzi: o miscare sau una din
+comenzile cuvinte care anticipeaza viitoarele functionalitati
+- Daca la stdin se primeste comanda "new", se reinitializeaza tabla si se seteaza
+cele 3 variabile aditionale pe false
+- Pentru comenzile "resign" si "new" iesim din bucla de while, pentru ca se termina
+jocul
+- Comenzile black si white sunt echivalentele schimbarii modului de joc cu negrul,
+respectiv cu albul. Daca se primesc aceste comenzi se seteaza cele 3 variabile
+corespunzator, pentru a stii cand este randul botului sa mute si cu ce culoare joaca
+- Pentru comenzile "go" si "force" se aplica acelasi principiu de modificare a
+variabilelor, pentru "go" facand turn true pentru ca botul sa gandeasca
+posibilitatile de mutare si sa mute, iar pentru comanda force setam turn pe false
+si nu-i mai modificam valoarea pana la urmatoarele comenzi go, black sau white
+- In cazul in care primim o mutare la stdin, actualizam tabla in functie de
+miscarea primita si pasam randul robotului
+- La inceputul buclei infinite avem instructiunile de calculare a posibilitatilor
+de mutare pe care le are botul, actualizarea tablei si setarea coordonatelor
+pe care le va avea pionul nostru in cazul schimbarii culorii cu care va juca botul
+- Aceste instructiuni sunt conditionate de valorile variabilelor turn si stoped
+si nu se executa decat in momentul in care este randul botului si nu avem 
+comanda "force" activata (deci botul va face mutari cand primeste mutari la 
+stdin si jocul este pe varianta normala, sau cand isi schimba culoarea si va
+juca cu albul)
+
+*Board
+- Clasa Board construieste si actualizeaza tabla de joc, astfel ca in metoda 
+"newBoard" aseaza piesele corespunzator pentru inceputul jocului, iar in metoda
+"update" actualizeaza pozitiile pieselor pe tabla in functie de comanda
+primita la intrare
+
+
+*ConvertMoves
+-Este clasa care "traduce" sirul primit de la intrare care reprezinta ultima
+miscare efectuata, intr-un vector de integer de lungime 4 (primele 2 pozitii 
+traduc pozitia sursa pentru o matrice de 8x8, iar urmatoarele 2 pozitii sunt
+dedicate pozitiei destinatie a mutarii) pentru a putea face modificarile
+corespunzatoare pe tabla noastra ale carei pozitii sunt notate cu numere intregi
+de la 1 la 8
+- Aceasta clasa face si traducere back, pentru a afisa miscarea facuta de bot
+la stdout sub forma CharInteger - CharInteger
+
+*Pair
+-Clasa pair are ca atribute pozitiile pe X si Y si este folosita in programul
+nostru cand lucram cu pozitiile mutarilor
+
+*Piece 
+-Clasa abstracta care da o forma de baza pentru fiecare piesa, la moment
+include culoarea, pozitia si metoda abstracta possibleMoves obligatorie pentru
+fiecare piesa.
+
+*Pawn 
+-Mosteneste clasa Piece si implementeaza mutarile posibile ale unui pion.
+-In functie de culoarea cu care joaca botul se fac verificari pentru a vedea 
+daca: pionul isi poate face mutarea de inaintat cu o pozitie (se verifica daca 
+pozitia din fata lui este 0, adica goala, sau ocupata de o alta piesa), daca
+poate captura (in momentul in care pionul nu mai poate inainta, va verifica daca
+poate captura) sau nu mai sunt mutari disponibile.
+- In functie de rezultatele verificarilor de mai sus, adaugam intr-un vector 
+multimea de miscari posibile din pozitia curenta pe care se afla piesa noastra,
+iar in main se va verifica lungimea acestui vector iar botul va muta sau va
+da resign in functie de aceasta
+
+*Knight, Rook, Bishop, Queen, King
+-mostenesc clasa Piece dar nu au fost implementate pentru aceasta etapa. 
+
+Surse de inspiratie:
+	- ideile privind scheletul proiectului sunt originale, gandite de
+membrii echipei in intalnirile desfasurate cu scopul stabilirii modului de
+lucru, deci nu avem surse de inspiratie externe
+	- realizarea Makefile-ului a fost facuta cu ajutorul informatiilor
+de la urmatorul link: https://stackoverflow.com/questions/4063863/how-to-write-set-classpath-in-makefile-for-java-in-linux
+
+
+
+Responsabilitatile fiecarui membru:
+
+ 	- toti membrii echipei au lucrat la functia principala main, stabilind
+scheletul logic pe care se bazeaza
+ 	*Basaraba Razvan
+	- dezvoltarea structurii proiectului, implementarea claselor ajutatoare
+pentru crearea vectorului de posibile mutari sau de conversie a mutarilor primite
+la stdin si trimise la stdout
+	*Ciudin Luiza
+	- debugging si realizarea partii de documentatie
+	*Digori Parascovia
+	- debugging si restructurarea claselor construite, astfel incat sa
+prezinte un mod cat mai accesibil de a dezvolta urmatoarele etape
+	*Noaghea Marian
+	- realizarea matricei locale si actualizarea ei conform mutarilor
+efectuate
+
+	
+
+
+ETAPA 2:
+ 
+
+**Pentru a stoca toate miscarile valide ale tuturor pieselor de pe tabla, am
+format un vector in care adaugam miscarile valide ale fiecarei piese, si,
+efectuand o miscare de randomizare, se alege automat urmatoarea miscare a botului
+
+**Mutarile pieselor
+
+*Pawn
+-implementarea pionului a fost facuta in prima etapa, in aceasta etapa fiind
+adaugate doar functii si operatii necesare pentru miscarile speciale
+
+*Rook
+-pentru rook am verificat cele 4 directii valide, sa le numim North, South,
+East, West. 
+-de la pozitia actuala a piesei am facut 4 parcurgeri in cele 4
+directii mentionate si am verificat daca pe directia data pozitiile sunt goale
+sau ocupate de piese adverse pentru a adauga mutarea valida in vector, in caz
+contrar se opreste cautarea pe directia data.
+-pentru verificarea rocadelor am adaugat in Rook metodele setMoved si starea
+isMoved, care arata daca piesa data a mai fost mutata de la inceputul acestui joc.
+
+*Knight
+-pentru mutarile calului am incercat toate posibilitatile de mutare (8 la numar),
+o mutare fiind valida daca are ca destinatie o casuta din interiorul tablei de
+joc(functia inINterval) si daca aceasta este o casuta libera sau o piesa adversa. 
+
+
+*Bishop
+-pentru mutarile nebunului am verificat cele 4 directii valide pe verticala,
+prin 4 parcurgeri, si am verificat daca pe directiile respective exista pozitii
+pe care poate ajunge piesa, cu sau fara capturare, mutari care se adauga in
+vectorul de mutari posibile.
+
+
+*Queen
+-pentru regina am combinat posibilitatile de mutari de la rook si bishop,
+verificand astfel din pozitia actuala a piesei date toate directiile de North,
+South, East, West, cat si cele 4 diagonale. Daca pozitia este goala sau este
+ocupata de o piesa adversa, mutarea valida este adaugata in vectorul de mutari,
+altfel se va opri din verificarea acelei directii.
+
+
+*King
+-se verifica mutarile valide pentru rege si se genereaza vectorul de mutari
+pentru piesa in situatia de joc actuala.
+-am adaugat metoda setMoved si starea isMoved pentru verificarea rocadelor,
+care arata daca piesa data a mai fost mutata de la inceputul jocului curent.
+-isSmallCastlingPossible - metoda care returneaza true daca se poate face
+rocada mica, altfel returnand false. Aici am verificat pe rand cazurile de
+exceptie cand nu putem face rocada si verificari daca piesa a mai fost sau nu
+mutata si daca regele este sau nu in pericol de sah (folosind functia
+isDanger(opponentMoves, mode) - vectorul opponentMoves contine toate
+posibilitatile de mutari ale adversarului la momentul curent al jocului, astfel
+verificandu-se prin metoda inDanger (din board) daca nu exista vreo miscare
+posibila a oponentului in viitor care sa puna regele in sah.
+-isBigCastlingPossible - functioneaza dupa acelasi principiu cu
+isSmallCastlingPossible, cu indecsii pieselor diferiti.
+
+
+**Aparare la sah
+-avem o variabila danger care ne arata daca o miscarea a oponentului pune sau
+nu regele in pericol, si o copie a matricei interne a boardului. Pentru
+fiecare miscare pe care o face oponentul, verificam daca regele a fost pus in
+pericol.
+-daca regele nu se afla in pericol, generam toate miscarile posibile pentru bot
+si verificam daca printr-o miscare aleasa, regele se pune sau nu in
+pericol (caz in care alegem alta miscare si recopiam matricea).
+-daca regele se afla in pericol, generam din nou toate miscarile care pot fi
+facute de bot si incercam sa gasim una valida, pentru a iesi din zona de sah. 
+
+
+**Promovarea
+-partea de promovare a pionului se imparte in 2 ramuri: promovarea in cazul
+pionului botului, intr-una  dintre miscarile random si promovarea in cazul
+alegerii playerului.
+-pentru situatia in care playerul doreste promovarea unuia dintre pioni, se
+verifica mutarea primita de la xboard si litera de la finalul acesteia, si, in
+functie de asta, se actualizeaza tabla cu noua piesa adaugata in contul 
+playerului.
+-pentru situatia in care botul are un pion pe penultima linie, se adauga in
+vectorul de miscari posibile ale tuturor pieselor inca 4 mutari pentru situatia
+promovarii intr-una dintre cele 4 piese in mod aleatoriu.
+
+
+**EnPassant
+-pentru verificarea posibilitatii de efectare a enPassant-ului am creat doi
+vectori de mutari, movesBlack si movesWhite, care o sa pastreze toate mutarile
+facute de fiecare dintre parti pe parcursul jocului. Metoda EnPassantMove din
+board returneaza miscarea urmatoarea de tip enPassant in cazul in care ea este
+posibila, altfel va returna null.
+-in metoda EnPassantMove() vom extrage din vectorii movesWhite sau movesBlack
+(dupa caz) ultima miscare a oponentului. Aceasta miscare a oponentului devine
+punctul de referinta pentru toate verificarile de pe tabla, astfel ca verificam
+daca aceasta a fost facuta de un Pawn, daca culoarea piesei este diferita de
+mode-ul cu care jucam, daca piesa a fost mutata 2 patratele fiind pion, iar
+daca pe una dintre pozitiile adiacente se afla un pion de culoarea botului. 
+-daca aceste verificari sunt pozitive, mai facem mici verificari de pozitii,
+pentru a vedea daca pozitia pe care o sa ajungem dupa capturare e null.
+-daca miscarea enPassant nu este null, updatam si board-ul de joc prin metoda
+doEnPassant() din board.
+
+**Rocade
+-strategia noastra de joc alege sa faca rocada oricand aceasta este posibia,
+astfel ca, in Main verificam mai intai daca regele nu este in pericol, prin
+variabila boolean danger.
+-instantiam regele de pe mode-ul bot-ului si verificam cu metodele
+isSmallCastlingPossible() si isBigCastlingPossible() daca urmatoarea mutare va
+fi o miscare speciala de tip rocada. Daca rocada este posibila se genereaza
+urmatoarea miscare a regelui din metoda kingAnyCastling() din clasa board,
+care primeste ca parametru mode-ul, pozitia regelui si un offset 
+(determinat pentru black ca fiind +2 iar pentru white -2) in dependenta de mode,
+astfel ca se va genera miscarea regelui cu 2 pozitii mai la stanga/dreapta.
+-aceasta mutare este transmisa la xboard si updatam tabela de joc prin metodele
+doSmallCastling() si doBigCastling().
+-metodele functioneaza dupa acelasi principiu, se updateaza manual pozitiile
+regelui si turei in board-ul de joc, pozitia anterioara se egaleaza cu null, iar
+noua instanta de King sau Rook este setata ca mutata (setMoved(true)).
+
+
+**Responsabilitatile fiecarui membru
+	*Basaraba Razvan
+	-implementarea miscarilor pentru Bishop, tratarea cazurilor de sah si
+	debugging
+	*Ciudin Luiza
+	-implementarea miscarilor pentru King, implementarea miscarii speciale
+	de promovare
+	*Digori Parascovia
+	-implementarea miscarilor pentru Rook si Queen si a miscarilor speciale
+	enPassant si rocade
+	*Noaghea Marian
+	-implementarea miscarilor pentru Knight si debugging
+
+
+
+
+		
+
+
